@@ -1,81 +1,74 @@
 # Tech Stack
 
-> **Status: TBD.** The project is in early development. This document records the
-> decisions that have been made and the open decisions that must be resolved,
-> along with the candidates and criteria for each. Update this file as choices
-> are made — it is the authoritative record of the stack.
+Vector Job Search is a C# / .NET application with a React single-page frontend. The backend collects job listings, embeds them via a hosted API, and ranks them against a user-defined ideal job description; the browser presents a ranked list with similarity scores.
 
-## Guiding Constraints
+## Core
 
-The stack must support these core capabilities (see `mission.md`):
+| Layer | Choice | Rationale |
+|---|---|---|
+| Language | **C# 14** | Type safety end-to-end; first-class Azure integration; contributor familiarity |
+| Runtime | **.NET 10 (ASP.NET Core, LTS)** | Strong async I/O for fetching listings; solid HTTP/JSON tooling |
+| Embeddings | OpenAI-compatible hosted API (nano-gpt) | Base URL + API key in configuration; any OpenAI-compatible provider (OpenAI, Azure OpenAI, nano-gpt) can be swapped via config alone. Target model class: `text-embedding-3-small` (~$0.02/M tokens — pennies at personal scale) |
+| Vector store | Azure SQL Database (free offer), native `VECTOR` columns | Free indefinitely: 100,000 vCore-seconds/month, 32 GB storage + backup. Cosine similarity via `VECTOR_DISTANCE()`; works with EF Core |
+| Frontend | **React 19 + TypeScript 5.9 (SPA)** | Rich, ranked-list presentation; calls the ASP.NET Core backend API |
+| Backend hosting | Azure App Service F1 (free tier) | 60 CPU-minutes/day, sufficient for personal use a few times a day |
+| Frontend hosting | Azure Static Web Apps (free plan) | Free tier: 100 GB bandwidth; suits a single-user app |
+| Infrastructure | **Terraform** | All Azure resources defined as code; remote state in an Azure Storage account (negligible cost) |
+| Deployment | GitHub Actions | CI/CD on push; OIDC (federated credentials) via `azure/login` — no stored client secrets |
 
-1. **Text embedding** — Convert the ideal job description and job listings into vectors.
-2. **Vector similarity search** — Rank listings by cosine similarity to the ideal job.
-3. **Source aggregation** — Collect listings from multiple configured sources (APIs, boards, scrapers).
-4. **Presentation** — Present a ranked list with similarity scores.
+## Frameworks & Core Libraries
 
-## Decided
+- **ASP.NET Core (Minimal APIs)** — backend API surface for collection, ranking, and configuration
+- **Microsoft.Extensions.AI** — provider-agnostic embedding abstraction (`IEmbeddingGenerator`); the OpenAI-compatible client plugs in behind it
+- **Entity Framework Core** — typed data access to Azure SQL, including `VECTOR` columns
+- **Microsoft.Data.SqlClient** — ADO.NET driver underpinning EF Core for Azure SQL
+- **System.Net.Http** (`HttpClientFactory`) — fetching listings from source APIs
+- **React 19 + TypeScript 5.9** (Vite) — frontend SPA, calling the backend API over HTTP
 
-| Area       | Decision          | Notes                                    |
-| ---------- | ----------------- | ---------------------------------------- |
-| Repository | Vector Job Search | See `README.md`                          |
-| License    | TBD               | To be chosen before first public release |
+## Data
 
-## Open Decisions
+- **Azure SQL Database free offer** (serverless General Purpose SKU, free-offer flag) with native `VECTOR` columns for production
+- Serverless auto-pause introduces a brief cold start when idle — acceptable for a personal tool
 
-### 1. Primary Language / Runtime
+## User Interface
 
-Candidates:
+- **React + TypeScript web app (SPA)** — the user-facing interface, hosted on Azure Static Web Apps
+- Terraform links the Static Web App to the App Service backend (CORS / `backendUri` configuration)
 
-- **C# / .NET** — Strong typing, good async I/O, first-class Azure integration, solid HTTP/JSON tooling for API-based work.
-- **Python** — Rich ML and embedding ecosystem (e.g. sentence-transformers), strong scraping tooling.
-- **Node.js / TypeScript** — Strong typing, good async I/O for fetching listings, easy embedding API integration.
+## Listing Sources
 
-Decision criteria: embedding library availability, source-scraping needs, contributor familiarity.
+- **Adzuna Jobs API** first — free tier: instant key, no payment details, ~2,500 calls/day
+- **Reed Jobseeker API** second — to follow once Adzuna is working
+- Both behind the pluggable source architecture (per the `sources` config setting)
 
-**Decision: TBD**
+## Tooling
 
-### 2. Embedding Provider
+- `dotnet` CLI for build, run, and test
+- `npm` + `vite` for frontend development and production builds
+- `typescript` compiler in strict mode for frontend type checking
+- `terraform` for infrastructure provisioning (`infra/` directory)
+- `GitHub Actions` for CI/CD (OIDC federated credentials; no stored secrets)
+- `azure/setup-terraform` and `azure/login` actions in the pipeline
+- `editorconfig` + formatter (`dotnet format`) for consistent C# style
 
-**Decision: Embeddings will be provided by a hosted API.**
+## Testing
 
-- Options include OpenAI, Cohere, and Azure OpenAI, among others.
-- No local model hosting; per-use API cost is accepted.
-- The provider must remain behind an abstraction (per the `embedding_provider` config setting) so the specific API can be changed via configuration without code changes.
+- **xUnit** — backend unit tests for similarity ranking, source parsers, and configuration loading
+- **xUnit integration tests** against a local SQL instance for vector storage and queries
+- **Vitest** — frontend unit tests, run alongside the TypeScript strict-mode compile in CI
+- **React Testing Library** — component tests for the ranked-results UI
 
-**Specific API: TBD**
+## Quality Gates
 
-### 3. Vector Store
+- All PRs must pass build and tests before merge (GitHub Actions CI)
+- Lint/format check (`dotnet format --verify-no-changes`) on every push
+- TypeScript strict-mode compile and frontend type checks on every push
+- Terraform `fmt` and `validate` on infrastructure changes
+- No deployment without a green CI run
 
-**Decision: TBD — most likely an Azure-hosted option.**
+## Constraints & Anti-Patterns
 
-The leading direction is Azure (which pairs naturally with a C#/.NET stack), with candidates including:
-
-- **Azure AI Search** (vector search capability) — fully managed, built-in vector indexing.
-- **Azure Database for PostgreSQL + pgvector** — durable, queryable, one system for metadata + vectors.
-- **Azure Cosmos DB** (vector search) — if a NoSQL fit emerges.
-
-Self-hosted or non-Azure options (Chroma, Qdrant, in-memory/file-based) remain fallbacks if Azure costs or complexity don't fit this personal-scale project.
-
-Scale expectation is personal use (thousands of listings, not millions), which all candidates satisfy.
-
-### 4. Listing Sources
-
-**Decision: Start with the [Adzuna Jobs API](https://developer.adzuna.com/), followed by the [Reed Jobseeker API](https://www.reed.co.uk/developers/jobseeker).**
-
-- **Adzuna Jobs API** — first source to integrate.
-- **Reed Jobseeker API** — second source, to follow once Adzuna is working.
-
-Both are behind the pluggable source architecture (per the `sources` config setting), so further sources can be added as additional implementations.
-
-### 5. User Interface
-
-Candidates: CLI, local web app, TUI.
-
-**Decision: TBD**
-
-## Decision Process
-
-1. Raise a proposal (issue or PR editing this file).
-2. Record the decision with rationale in **Decided** above.
-3. Move the resolved item out of **Open Decisions**.
+- **Running costs must stay near zero** — free tiers only (App Service F1, Static Web Apps free plan, SQL free offer); any choice that adds cost needs explicit justification
+- Keep the provider behind the abstraction — never call an embedding API directly from pipeline code; it must remain swappable via the `embedding_provider` config setting
+- Keep sources pluggable — new sources are additional implementations behind the `sources` config setting, not code forks
+- Avoid design dead ends — no in-memory-only storage, no single-user assumptions baked into the data model, no unbounded in-process work; growth headroom comes free where it costs nothing up front
