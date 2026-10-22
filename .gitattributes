@@ -1,0 +1,54 @@
+# Normalize line endings for all text files; store LF in the repo.
+# Adding this file is safe, but the *renormalization* (committing the
+# resulting end-of-line cleanups) should land as its own commit/PR.
+* text=auto
+
+# Force LF for scripts that break with CRLF
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Force CRLF for Windows scripts
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Source/markup — normalize, plus smarter diffs where available
+*.cs text diff=csharp
+*.csproj text
+*.sln text eol=crlf merge=ours
+*.tsx text
+*.ts text
+*.js text
+*.jsx text
+*.css text
+*.scss text
+*.html text
+*.json text
+*.jsonc text
+*.md text
+*.mdx text
+*.yml text
+*.yaml text
+*.tf text
+*.tfvars text
+*.editorconfig text
+*.gitignore text
+*.gitattributes text
+
+# Binaries — never normalize, never text-diff
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg text
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.zip binary
+*.exe binary
+*.dll binary
+*.pdb binary
+
+# Terraform lockfile — text, but should not be normalized-churned
+*.tf.lock text

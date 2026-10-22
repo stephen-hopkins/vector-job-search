@@ -1,0 +1,128 @@
+# --- .NET / C# ---
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+artifacts/
+
+# NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+.nuget/
+nuget.exe
+project.assets.json
+project.fr.json
+*.nuget.props
+*.nuget.targets
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.rsuser
+[Dd]ebuggee/*
+*.rjproj*
+
+# Test results
+TestResults/
+[Tt]est[Rr]esult*/
+*.coverage
+*.coveragexml
+coverage.xml
+coverage.*.json
+*.trx
+*.txlog
+lcov.*
+
+# Rider/ReSharper
+*.DotSettings.user
+
+# Publish output
+publish/
+*.pubxml.user
+
+# --- Node / React (Vite + TypeScript) ---
+node_modules/
+dist/
+dist-ssr/
+.vite/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Vite/TS build info
+*.tsbuildinfo
+
+# Coverage (Vitest)
+coverage/
+
+# --- Environment / secrets ---
+# Never commit API keys (embedding provider, job board APIs, Azure)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+
+# --- Terraform ---
+# Local .terraform directories (provider plugins/modules)
+.terraform/
+.terraform.lock.hcl.append
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+# Ignore plan files but keep lock files tracked (commit .terraform.lock.hcl)
+!.terraform.lock.hcl
+
+# --- Azure ---
+azure-pipelines.yml-local
+*.azureSettings
+.publish/
+azurite/
+
+# --- OpenCode / editor noise ---
+.opencode/*.local.*
+.history/
+*.swp
+*.swo
+*~
+
+# --- OS noise ---
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# --- Misc ---
+*.log
+tmp/
+.cache/
