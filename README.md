@@ -63,12 +63,7 @@ cd vector-job-search
 
 ## Configuration
 
-| Setting              | Description                                                             |
-| -------------------- | ----------------------------------------------------------------------- |
-| `ideal_job`          | Description of your ideal job, used to generate the reference embedding |
-| `sources`            | Job listing sources to search (APIs, boards, scrapers)                  |
-| `embedding_provider` | Provider and model used for embeddings                                  |
-| `top_k`              | Number of ranked results to return                                      |
+Configuration values are TBD. They will probably include endpoints and API keys.
 
 ## License
 
