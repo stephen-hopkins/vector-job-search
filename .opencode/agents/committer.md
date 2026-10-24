@@ -1,5 +1,5 @@
 ---
-description: Creates a branch, commits current changes, pushes, and opens a GitHub PR
+description: Creates a branch, commits current changes, pushes, and opens a GitHub PR. THE agent to use whenever the user asks to commit, push, or "push it" — always delegate git add/commit/push/PR work to this agent instead of running those commands directly.
 mode: subagent
 model: nano-gpt/z-ai/glm-5.3-flash
 permissions:
@@ -7,6 +7,8 @@ permissions:
   - { action: shell, resource: git status*, effect: allow }
   - { action: shell, resource: git diff*, effect: allow }
   - { action: shell, resource: git switch -c *, effect: allow }
+  - { action: shell, resource: git switch main, effect: allow }
+  - { action: shell, resource: git checkout main, effect: allow }
   - { action: shell, resource: git add -A, effect: allow }
   - { action: shell, resource: git commit -m *, effect: allow }
   - { action: shell, resource: git push*, effect: allow }
@@ -55,8 +57,14 @@ Follow this procedure exactly, in order:
    of the changes>"`. The PR targets the default branch (`main`) and is a
    regular (non-draft) PR.
 
-8. **Report.** Return the PR URL, the branch name, and the commit message to
-   the caller.
+8. **Return to main.** After the PR is created, check out the default branch
+   again so the working tree is back on `main` for the next task:
+   `git switch main`. Do not pull or rebase; just switch. If the switch
+   fails (e.g. untracked files would be overwritten), report it and leave
+   the working tree as-is.
+
+9. **Report.** Return the PR URL, the branch name, the commit message, and
+   confirmation that the working tree is back on `main` to the caller.
 
 On any abort (steps 1–3), explain clearly why you stopped and what the caller
 should do next. Do not attempt workarounds.
