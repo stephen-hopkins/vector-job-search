@@ -4,6 +4,18 @@ Vector Job Search is an application that automatically finds job listings for yo
 
 Instead of sifting through hundreds of listings, you describe your ideal job once. The application embeds that description, embeds incoming job listings, and uses vector search to compare them — returning a ranked list of the best matches.
 
+## Dual purpose
+
+This project serves two goals at once:
+
+1. **A hobby project** — a genuinely useful tool for finding and ranking job listings with vector similarity search.
+2. **A learning vehicle** — a deliberate practice ground for human-on-the-loop (HOTL) agentic engineering: agents execute end-to-end in bounded domains while the human supervises via evidence, dashboards, and surgical intervention.
+
+The learning side of the project is documented in two files in the [`learning/`](learning/) folder:
+
+- [`contract.md`](learning/contract.md) — the learning contract: objective, success criteria, phase milestones, and rules
+- [`plan.md`](learning/plan.md) — the execution plan: per-phase instructions, prompts, and resources
+
 ## Constitution
 
 The project's constitution lives in the [`specs/`](specs/) folder:
