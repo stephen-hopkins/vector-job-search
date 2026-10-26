@@ -13,7 +13,6 @@
 - [x] Finalize tech stack decisions (`tech-stack.md`)
 - [ ] Scaffold repository (project structure, tooling, linting, tests)
 - [x] Choose license
-- [x] Define configuration schema (`ideal_job`, `sources`, `embedding_provider`, `top_k`)
 
 **Exit criteria:** A skeleton project builds and tests pass.
 
