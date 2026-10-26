@@ -49,7 +49,7 @@ Each entry:
 
 | Phase                                      | Status | Exit condition                                                 |
 | ------------------------------------------ | ------ | -------------------------------------------------------------- |
-| 0 – First spec (prompt vs `/specify` diff) | ☐      | Two draft specs exist + diff notes committed                   |
+| 0 – First spec (prompt vs `/specify` diff) | ✅      | Two draft specs exist + diff notes committed                   |
 | 1 – Verifiability substrate                | ☐      | Every acceptance condition maps to a test ID; CI green         |
 | 2 – Gated loop (L1/L2)                     | ☐      | 4–5 features done; intervention log has ≥10 entries            |
 | 3 – Reviewer agent + policy tiers          | ☐      | Reviewer agent blocks/enforces on 3 real PRs; S2 ≥70% sustained for one week |
