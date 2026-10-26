@@ -77,6 +77,14 @@ it and lean on `/specify`.
 
 Two draft specs (hand-prompt + /specify) exist, diff notes committed.
 
+> **Note (2026-10-26):** Phase 0 complete. The diff findings
+> (`learning/spec-comparison/comparison.md`) didn't just update the
+> constitution — a **new spec-writing skill** was created from them. Its
+> first output is `learning/spec-comparison/spec-writing-skill-spec.md`,
+> evaluated against the comparison's recommendations in Section 8 of the
+> comparison doc. The skill will be tweaked on future specs based on actual
+> functionality rather than the initial project scaffold.
+
 ---
 
 ## Phase 1 — Verifiability substrate (weeks 2–3)
