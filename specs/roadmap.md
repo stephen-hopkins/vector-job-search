@@ -11,7 +11,7 @@
 ## Phase 0 — Foundation
 
 - [x] Finalize tech stack decisions (`tech-stack.md`)
-- [ ] Scaffold repository (project structure, tooling, linting, tests)
+- [ ] Scaffold repository (project structure, tooling, linting, tests) — [`001-project-scaffold/spec.md`](001-project-scaffold/spec.md)
 - [x] Choose license
 
 **Exit criteria:** A skeleton project builds and tests pass.

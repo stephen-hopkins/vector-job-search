@@ -97,7 +97,7 @@ steps.
 
 1. Adopt Superpowers (obra/superpowers) for TDD enforcement in-session —
    the only major framework that hard-enforces red-green-refactor.
-   Spec Kit = what to build; Superpowers = how the agent works.
+   The spec-writing skill = what to build; Superpowers = how the agent works.
 2. Generate tests + schemas from the Phase 0 spec (prompt below).
 3. Wire CI to run on every agent PR.
 4. Add a rule to the constitution: no merge closes a task unless the spec
@@ -129,13 +129,20 @@ Every acceptance condition maps to a test ID; CI green.
 
 ## Phase 2 — Gated loop, then dismantle the gates deliberately (weeks 4–6)
 
-Run full Spec Kit flows (/specify → /plan → /tasks → /implement) with human
+Run the full spec-driven flow (spec-writing skill → plan prompt → tasks
+prompt → implement prompt, all in the Prompt Library below) with human
 approval at each gate. This is HITL — temporarily, and correctly. You need a
 baseline of what "correct" looks like before you can afford to stop checking.
 
+The prompts are self-contained replacements for Spec Kit's slash commands:
+they keep the artifact structure (per-feature dir with plan.md, tasks.md)
+but drop the tooling, setup scripts, and built-in pause-points. The gates
+in Phase 2 are *yours* — you choose when to review each artifact — not
+the tool's.
+
 ### Steps
 
-1. Run 4–5 features through the full gated flow.
+1. Run 4–5 features through the full gated flow (Prompt Library below).
 2. Log EVERY intervention: what the agent got wrong, and what signal would
    have caught it. That log becomes the oversight policy in Phase 3/4.
 3. Introduce the autonomous-implementation prompt on the LAST feature, with
@@ -269,7 +276,6 @@ Drift drill passes; escalation alerting works.
 - OpenSpec: https://github.com/Fission-AI/OpenSpec
 - "Spec-Driven Development: Invariants, Not Frameworks"
   https://ranjankumar.in/spec-driven-development-invariants-not-frameworks
-- GitHub Spec Kit: https://github.com/github/spec-kit
 - Autonomy ladder reference: https://ilmtec.ai/blog/levels-of-ai-agent-autonomy
 
 ### Exit condition
@@ -286,3 +292,178 @@ their way there, and real-world autonomy lags model capability (the
 how you earn the right to approve almost nothing — and to interrupt at
 exactly the right moments. Measure success by how often you're in the RIGHT
 loop, not how rarely you're in any loop.
+
+---
+
+## Prompt Library — Spec Kit replacements (HOTL-native)
+
+These three prompts replace `/plan`, `/tasks`, and `/implement`. The
+spec-writing skill already replaces `/specify` + `/clarify`. They keep
+Spec Kit's artifact conventions (per-feature directory, plan.md → tasks.md
+→ implementation, task IDs traceable to spec conditions) so the Phase 1
+verifiability substrate and the Phase 3 reviewer agent work unchanged.
+They differ from Spec Kit in two ways: no tooling or setup scripts
+required, and the HITL pause-and-approve assumptions are replaced by
+explicit stop conditions and evidence — the human chooses where the gates
+are, not the prompt.
+
+Run them in sequence on a feature directory
+`specs/<feature>/` that already contains a `spec.md` from the
+spec-writing skill.
+
+### 1. Plan (replaces /plan)
+
+Ask: "Derive the implementation design for the feature specified in
+`specs/<feature>/spec.md`. Do not write feature code.
+
+```text
+Design mode. Read specs/<feature>/spec.md and the project constitution.
+Produce specs/<feature>/plan.md with these sections, in order:
+
+1. Technical context — languages, frameworks, libraries, key packages
+   with versions, and the project/file structure this feature touches.
+   Mark anything you cannot determine from the repo as
+   "NEEDS CLARIFICATION".
+2. Constitution check — quote each constitution principle that applies
+   to this feature and state whether the design complies, violates
+   (with justification), or needs an exception.
+3. Research — for every NEEDS CLARIFICATION, dependency, or integration:
+   investigate the codebase and docs to resolve it. Record each
+   resolution as: decision, rationale, alternatives considered.
+   If an item cannot be resolved without a human decision, STOP and
+   present it as a blocking question — list everything blocking in one
+   message, not one at a time.
+4. Data model — entities (fields, types, validation rules quoted
+   verbatim from the spec), relationships, and state transitions.
+5. Contracts — the interfaces this feature exposes (API endpoints, CLI
+   commands, schemas, events), with request/response or input/output
+   shapes. Skip if the feature is purely internal.
+6. Quickstart — the exact commands a reviewer would run to validate the
+   feature end-to-end, and the expected observable outcome of each.
+
+Rules: the plan says WHAT and WHERE (files, interfaces, entities), not
+the line-by-line HOW. Every design decision must trace to a spec
+condition ID; anything in the plan that no spec condition covers is
+scope creep — delete it or flag it as an explicit proposal. End with an
+artifact list and the traceability table: design element → spec
+condition ID. Do not write implementation code.
+```
+
+Gate for Phase 2: review plan.md before generating tasks. Gate for
+Phase 3+: reviewer agent checks traceability; you see only ESCALATEs.
+
+### 2. Tasks (replaces /tasks)
+
+```text
+Task generation mode. Read specs/<feature>/spec.md (user stories with
+priorities), plan.md (tech stack, data model, contracts), and the
+constitution. Produce specs/<feature>/tasks.md:
+
+- Organize by user story: one phase per story, in spec priority order.
+- Phase 1: setup (project initialization, shared infrastructure).
+- Phase 2: foundational tasks that block all stories.
+- Phase 3+: user story phases. Within each: test tasks (write the
+  failing tests mapped to that story's acceptance conditions first),
+  then models, services, endpoints, integration — in dependency order.
+- Final phase: polish and cross-cutting concerns.
+
+Format every task EXACTLY as:
+- [ ] [TaskID] [P] [Story] Description with explicit file path
+where [P] marks tasks that can run in parallel (different files, no
+dependence on incomplete tasks) and [Story] (e.g. [US1]) is required
+only on user-story tasks. Quote every validation rule and constraint
+from the data model verbatim in the task text — do not leave
+constraints to implementation-time discretion.
+
+Each user story phase must be independently testable: state its goal,
+its test criteria, and the acceptance-condition IDs it satisfies. Add
+a dependency section (which stories block which, if any) and a
+suggested MVP scope (usually just US1).
+
+Every acceptance condition from spec.md must be covered by at least
+one test task. Include a traceability appendix: task ID → spec
+condition ID. If a condition cannot be mapped to a task, STOP and
+report the gap instead of silently skipping it. tasks.md must be
+executable without further context: each task specific enough that an
+agent can complete it with no memory of this conversation.
+```
+
+### 3. Implement (replaces /implement)
+
+Two variants — the explicit gate is choosing which one to run.
+
+HITL variant (Phase 2 calibration):
+
+```text
+Implementation mode, supervised. Work in specs/<feature>/.
+Read tasks.md, plan.md, and the constitution. Execute tasks in
+dependency order (parallel [P] tasks may be interleaved):
+
+- For each task: implement, then run the tests mapped to it in the
+  traceability table. Mark the task [X] in tasks.md ONLY when its
+  tests pass; attach a one-line evidence statement ("test X passes,
+  command Y output Z").
+- Halt after each user-story phase and report: tasks done, evidence,
+  spec conditions satisfied. Wait for my review before continuing.
+- STOP and ask only when: a spec condition is ambiguous, a task
+  requires an irreversible action (migrations, external API writes,
+  deletes), or plan.md conflicts with the code.
+```
+
+HOTL variant (Phase 2 last feature onward — merges with the existing
+autonomous-implementation prompt):
+
+```text
+Autonomous implementation mode. Target: L3 supervision.
+- Implement the tasks in specs/<feature>/tasks.md in order.
+- For each task: implement, run the mapped tests from the traceability
+  table, and attach a one-line evidence statement ("test X passes,
+  command Y output Z").
+- STOP and ask only when: a spec condition is ambiguous, a task requires
+  an irreversible action (migrations, external API writes, deletes), or
+  the design doc conflicts with the code.
+- Everything else: proceed without asking. Log decisions to
+  decisions.md with rationale instead of seeking approval.
+- If a test cannot be made to pass without deviating from plan.md,
+  update the spec and plan via a recorded delta — never silently.
+End with a summary table: task → status → evidence → spec condition IDs.
+```
+
+### Mapping to what was removed
+
+| Spec Kit command   | Replacement                                             |
+| ------------------ | ------------------------------------------------------- |
+| `/specify`         | spec-writing skill (already exists)                      |
+| `/clarify`         | embedded in the skill's interview loop                  |
+| `/plan`            | Prompt 1 above (+ research/data-model/contracts/quickstart) |
+| `/tasks`           | Prompt 2 above (+ strict checklist format)              |
+| `/implement`       | Prompt 3 above (HITL or HOTL variant)                   |
+| setup scripts, extension hooks, checklists dir | dropped — the traceability table and Phase 1 CI carry the enforcement load |
+
+Spec Kit itself remains a useful reference for prompt patterns
+(repo: https://github.com/github/spec-kit, prompts under
+`templates/commands/`) — but as reading material on craft, not a
+runtime dependency.
+
+---
+
+## Updates Log
+
+> **2026-10-26 — Phase 0 complete.** The diff findings
+> (`learning/spec-comparison/comparison.md`) didn't just update the
+> constitution — a **new spec-writing skill** was created from them. Its
+> first output is `learning/spec-comparison/spec-writing-skill-spec.md`,
+> evaluated against the comparison's recommendations in Section 8 of the
+> comparison doc. The skill will be tweaked on future specs based on actual
+> functionality rather than the initial project scaffold.
+
+> **2026-10-27 — Spec Kit dependency removed.** Spec Kit assumed HITL
+> gates at every step (`/specify` → `/plan` → `/tasks` → `/implement`,
+> each pausing for human approval), which conflicts with the HOTL goal.
+> The spec-writing skill (which embeds clarify-style questioning
+> internally) replaces `/specify` + `/clarify`; the Prompt Library
+> replaces `/plan`, `/tasks`, `/implement`. The prompts keep Spec Kit's
+> artifact structure (plan.md, tasks.md, per-feature directory) but
+> replace its pause-and-approve flow with explicit stop conditions and
+> evidence statements. Phase 0 is unchanged — it records what actually
+> happened, including the Spec Kit comparison.
