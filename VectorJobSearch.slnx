@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/VectorJobSearch.Api/VectorJobSearch.Api.csproj" />
+    <Project Path="src/VectorJobSearch.Application/VectorJobSearch.Application.csproj" />
+    <Project Path="src/VectorJobSearch.Domain/VectorJobSearch.Domain.csproj" />
+    <Project Path="src/VectorJobSearch.Infrastructure/VectorJobSearch.Infrastructure.csproj" />
+  </Folder>
+</Solution>

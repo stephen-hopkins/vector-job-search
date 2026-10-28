@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/stephen-hopkins/vector-job-search/main/specs/001-project-scaffold/contracts/health-response.schema.json",
+  "title": "Health endpoint response",
+  "description": "Structured artifact produced by the backend health route (spec 001, B4 / AC-9, AC-10). Validated by test IDs P0-HEALTH-GET and P0-HEALTH-STANDALONE.",
+  "type": "object",
+  "required": ["status"],
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["healthy", "degraded", "unhealthy"],
+      "description": "Service status reported by the health route. The standalone skeleton reports \"healthy\" (AC-10)."
+    }
+  },
+  "additionalProperties": false,
+  "examples": [{ "status": "healthy" }]
+}

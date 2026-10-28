@@ -126,3 +126,6 @@ $RECYCLE.BIN/
 *.log
 tmp/
 .cache/
+# .NET build artifacts
+bin/
+obj/
