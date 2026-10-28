@@ -38,7 +38,8 @@ public class HealthEndpointTests
 
         using var document = await JsonDocument.ParseAsync(
             await response.Content.ReadAsStreamAsync());
-        var schema = JsonSchema.FromFile(RepoPaths.HealthResponseSchema);        var result = schema.Evaluate(document.RootElement, new EvaluationOptions
+        var schema = JsonSchema.FromFile(RepoPaths.HealthResponseSchema);
+        var result = schema.Evaluate(document.RootElement, new EvaluationOptions
         {
             OutputFormat = OutputFormat.List,
         });

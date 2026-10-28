@@ -5,4 +5,7 @@
     <Project Path="src/VectorJobSearch.Domain/VectorJobSearch.Domain.csproj" />
     <Project Path="src/VectorJobSearch.Infrastructure/VectorJobSearch.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/VectorJobSearch.Api.Tests/VectorJobSearch.Api.Tests.csproj" />
+  </Folder>
 </Solution>
