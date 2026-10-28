@@ -10,7 +10,7 @@
 
 - **Backend:** C# 14 on .NET 10 (LTS) — `dotnet` CLI; installed SDK `10.0.113` (C-2). ASP.NET Core **Minimal APIs** host.
 - **Frontend:** React 19 + TypeScript 5.9 in **strict mode**, built with **Vite** (C-2); Node v24.22.1, npm 11.19.1 installed.
-- **Backend tests:** xUnit + `Microsoft.AspNetCore.Mvc.Testing` (WebApplicationFactory) + `JsonSchema.Net` (schema validation, C-3) — the existing RED-phase test at `tests/VectorJobSearch.Api.Tests/HealthEndpointTests.cs` already references these.
+- **Backend tests:** xUnit + `Microsoft.AspNetCore.Mvc.Testing` (WebApplicationFactory) + `JsonSchema.Net` (schema validation, C-3) — the existing RED-phase test at `tests/VectorJobSearch.IntegrationTests/HealthEndpointTests.cs` already references these. Backend test code is split into two xUnit projects, both in the solution and both run by `dotnet test`: `tests/VectorJobSearch.UnitTests/` (pure-unit tests; empty in Phase 0) and `tests/VectorJobSearch.IntegrationTests/` (host-level tests such as the health suite).
 - **Frontend tests:** Vitest + React Testing Library (C-3), with jsdom environment for component render tests.
 - **CI:** GitHub Actions, GitHub-hosted runners only (C-1, AC-14). `gh` CLI 2.103.0 available for AC-13 / N-AC-1 / SC-4 verification.
 
@@ -36,9 +36,11 @@
       src/                                 ← placeholder page + one component render test
   tests/                                   ← ALL test code (location unchanged from current repo)
     run-project-scaffold-tests.sh          ← amend layout constants only
-    VectorJobSearch.Api.Tests/
-      VectorJobSearch.Api.Tests.csproj    ← new; added to VectorJobSearch.sln (file stays in place)
-      HealthEndpointTests.cs               ← unchanged (reformatted for dotnet format)
+    VectorJobSearch.UnitTests/             ← pure-unit tests (xUnit; empty in Phase 0)
+      VectorJobSearch.UnitTests.csproj
+    VectorJobSearch.IntegrationTests/     ← host-level tests (health suite via WebApplicationFactory)
+      VectorJobSearch.IntegrationTests.csproj
+      HealthEndpointTests.cs              ← unchanged (reformatted for dotnet format)
   .github/workflows/ci.yml                 ← create
   .editorconfig                            ← create at repo root
   README.md                                ← Getting Started rewritten with machine-verified gate commands
@@ -53,7 +55,7 @@
 **Key existing artifacts constraining the design:**
 
 - `tests/run-project-scaffold-tests.sh` expects: `backend`/`frontend` directory constants (to be amended — see R-2), README gate markers `<!-- gate: P0-TEST-ID -->` followed by a bash fence whose **first command line** is the gate command, and workflow steps containing the literal gate IDs `P0-BUILD-BACKEND`, `P0-TEST-BACKEND`, `P0-FORMAT-BACKEND`, `P0-BUILD-FRONTEND`, `P0-TYPECHECK-FRONTEND`, `P0-TEST-FRONTEND`.
-- `HealthEndpointTests.cs` requires: test-visible `AppFactory` (idempotent `CreateClient()`), `public partial class Program` in the API project (per its own implementation note), health route `GET /health`, trait `TestSuite=P0-HEALTH`. Its namespace (`VectorJobSearch.Api.Tests`) is already correct.
+- `HealthEndpointTests.cs` requires: test-visible `AppFactory` (idempotent `CreateClient()`), `public partial class Program` in the API project (per its own implementation note), health route `GET /health`, trait `TestSuite=P0-HEALTH`. Its namespace (`VectorJobSearch.IntegrationTests`) is already correct.
 - Contract schema `specs/001-project-scaffold/contracts/health-response.schema.json`: body is exactly `{ "status": "healthy" | "degraded" | "unhealthy" }` with `additionalProperties: false`.
 
 **NEEDS CLARIFICATION items:** resolved in §3.
@@ -206,7 +208,8 @@ gh run list                                 # expect conclusion 'success' for HE
 | `src/VectorJobSearch.Infrastructure/` | create (empty project, refs Application) |
 | `src/VectorJobSearch.Api/` (csproj refs Infrastructure; `Program.cs` with `GET /health`, `public partial Program`; `appsettings.json`) | create |
 | `src/web/` (Vite React 19 + TS 5.9 app, name "web"; scripts: `build`, `typecheck`, `test`; placeholder page; one RTL render test) | create |
-| `tests/VectorJobSearch.Api.Tests/VectorJobSearch.Api.Tests.csproj` | create in place; added to solution; `HealthEndpointTests.cs` reformatted only |
+| `tests/VectorJobSearch.IntegrationTests/VectorJobSearch.IntegrationTests.csproj` | create in place; added to solution; `HealthEndpointTests.cs` reformatted only |
+| `tests/VectorJobSearch.UnitTests/VectorJobSearch.UnitTests.csproj` | create in place; added to solution; empty in Phase 0 |
 | `tests/run-project-scaffold-tests.sh` | amend layout constants: `BACKEND_DIR=$REPO_ROOT`, `FRONTEND_DIR=$REPO_ROOT/src/web` |
 | `.github/workflows/ci.yml` | create |
 | `.editorconfig` | create at repo root |

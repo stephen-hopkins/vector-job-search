@@ -12,7 +12,7 @@
 // "TestSuite=P0-HEALTH"` runs exactly this group.
 //
 // The implementation must expose a test-visible factory named
-// VectorJobSearch.Api.Tests.AppFactory (idempotent) creating a WebApplication
+// VectorJobSearch.IntegrationTests.AppFactory (idempotent) creating a WebApplication
 // client for the API project with all external-service environment variables
 // removed.
 
@@ -21,7 +21,7 @@ using System.Text.Json;
 using Json.Schema;
 using Xunit;
 
-namespace VectorJobSearch.Api.Tests;
+namespace VectorJobSearch.IntegrationTests;
 
 [Trait("TestSuite", "P0-HEALTH")]
 public class HealthEndpointTests

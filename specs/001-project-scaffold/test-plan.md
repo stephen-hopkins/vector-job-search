@@ -13,7 +13,8 @@ must appear in the source tree as a name or comment (`grep -rn "P0-"` finds them
 | Suite | Location | Runner |
 |---|---|---|
 | Scaffold verification | `tests/run-project-scaffold-tests.sh` | `bash tests/run-project-scaffold-tests.sh [test-id...]` |
-| Backend health (xUnit) | `tests/VectorJobSearch.Api.Tests/` | `dotnet test at the repo root` (filter: `TestSuite=P0-HEALTH`) |
+| Backend health (xUnit) | `tests/VectorJobSearch.IntegrationTests/` | `dotnet test at the repo root` (filter: `TestSuite=P0-HEALTH`) |
+| Backend unit tests (xUnit) | `tests/VectorJobSearch.UnitTests/` | `dotnet test at the repo root` |
 | Contract schemas | `specs/001-project-scaffold/contracts/` | consumed by `P0-HEALTH-*` tests |
 
 The shell suite covers everything that is a command exit code, file inspection, or
@@ -36,6 +37,10 @@ E-2, E-3) so they also satisfy AC-5's "at least one meaningful backend test".
   Phase 0 keeps Domain/Application/Infrastructure empty (structure only, no
   persistence or data-model decisions — spec C-4).
 - Backend API project: `src/VectorJobSearch.Api/VectorJobSearch.Api.csproj`.
+- Backend test projects (both xUnit, both in the solution, both run by `dotnet test`):
+  `tests/VectorJobSearch.UnitTests/` (pure-unit tests; empty in Phase 0) and
+  `tests/VectorJobSearch.IntegrationTests/` (host-level tests — the health
+  suite via `WebApplicationFactory`).
 - Health route: `GET /health` (spec B4).
 - README **Getting Started** section documents each gate command as an HTML marker
   comment followed by a fenced bash block whose first command line is the gate:

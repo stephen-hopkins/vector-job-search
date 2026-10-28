@@ -107,6 +107,9 @@ Recorded verbatim from the spec interview:
 5. **Q:** "The README's Getting Started section is currently placeholders ('TBC', 'coming soon'). Should this scaffold make the README's build/test/run instructions real and machine-verified, or leave docs for Phase 5?"
    **A:** "Yes, real instructions."
 
+6. **Q:** "Should the backend test code live in a single `Api.Tests` project, or split into unit and integration test projects?"
+   **A:** "Rename to two projects: `VectorJobSearch.UnitTests` (future pure-unit tests) and `VectorJobSearch.IntegrationTests` (host-level tests such as the health-endpoint suite). Both are xUnit, both are registered in the solution and run by `dotnet test`." *(Actioned during Phase 2: `tests/VectorJobSearch.Api.Tests` → `tests/VectorJobSearch.IntegrationTests` + new `tests/VectorJobSearch.UnitTests`.)*
+
 ## Edge Cases
 
 - **E-1 — Frontend built without dependencies installed:** running the frontend build before the documented dependency-install step exits non-zero; after the install step, the same build exits 0. Both outcomes are exit-code verifiable.
