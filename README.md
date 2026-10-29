@@ -23,6 +23,7 @@ The project's constitution lives in the [`specs/`](specs/) folder:
 - [`mission.md`](specs/mission.md) — Purpose, values, and non-goals
 - [`tech-stack.md`](specs/tech-stack.md) — Stack decisions (made and open)
 - [`roadmap.md`](specs/roadmap.md) — Phased development plan
+- [`process.md`](specs/process.md) — Engineering-process invariants (merge gates, spec–test agreement)
 
 ## How It Works
 

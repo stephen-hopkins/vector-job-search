@@ -125,6 +125,14 @@ to code. Halt after tests are written and failing.
 
 Every acceptance condition maps to a test ID; CI green.
 
+> **Note (2026-10-29):** Phase 1 complete. Superpowers adopted; test plan
+> and contract schemas generated from the Phase 0 spec
+> (`specs/001-project-scaffold/test-plan.md`); CI green on agent PRs
+> (PRs #10, #11). The spec–test agreement rule was added to the
+> constitution as `specs/process.md` (merge gates), with pointers from
+> `README.md` and `specs/mission.md`. Future process invariants (e.g. the
+> Phase 3 policy tier table) belong there too.
+
 ---
 
 ## Phase 2 — Gated loop, then dismantle the gates deliberately (weeks 4–6)
