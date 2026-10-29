@@ -129,3 +129,4 @@ tmp/
 # .NET build artifacts
 bin/
 obj/
+.superpowers/
