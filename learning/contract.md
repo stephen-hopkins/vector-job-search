@@ -45,7 +45,7 @@ Each entry:
 - Lesson: (one sentence. If none, say "no lesson" — that's allowed.)
 - Change to constitution/specs: (or "none")
 
-## Learning log format (append-only)
+## Learning log (append-only)
 
 ### 2026-10-29 — Phase 1 — agent hand-edited files instead of using dotnet CLI
 
@@ -63,12 +63,20 @@ Each entry:
 - Lesson: branch-naming rules belong in the implementation prompt (and eventually the agent skill), not just in the committer agent — the implementing session is the one that creates the branch.
 - Change to constitution/specs: none — fix was to add a branch-naming bullet to the implementation-mode prompt in learning/plan.md (both HITL and HOTL variants); likely to be folded into the same future agent skill.
 
+### 2026-10-29 — Phase 1 — constitution rule conflated task closure with PR merge
+
+- What I expected: the spec–test agreement rule could be stated as "no merge closes a task".
+- What happened: functionality arrives via PRs, but tasks are closed by `[X]` marks in tasks.md — a task can span PRs. Stating the rule in terms of merge conflated the bookkeeping action with the git event.
+- Signal: reviewing the drafted specs/process.md — the word "merge" was doing double duty.
+- Lesson: process rules must name their actual enforcement point (task closure via evidence statements; PR merge via CI) instead of borrowing a nearby event's name.
+- Change to constitution/specs: specs/process.md rewritten to gate `[X]` marking on passing mapped tests; "merge" retained only where literally a PR merge.
+
 ## Phase milestones
 
 | Phase                                      | Status | Exit condition                                                 |
 | ------------------------------------------ | ------ | -------------------------------------------------------------- |
 | 0 – First spec (prompt vs `/specify` diff) | ✅      | Two draft specs exist + diff notes committed                   |
-| 1 – Verifiability substrate                | ☐      | Every acceptance condition maps to a test ID; CI green         |
+| 1 – Verifiability substrate                | ✅      | Every acceptance condition maps to a test ID; CI green         |
 | 2 – Gated loop (L1/L2)                     | ☐      | 4–5 features done; intervention log has ≥10 entries            |
 | 3 – Reviewer agent + policy tiers          | ☐      | Reviewer agent blocks/enforces on 3 real PRs; S2 ≥70% sustained for one week |
 | 4 – Oversight surface (dashboards)         | ☐      | Drift drill passes; escalation alerting works                  |

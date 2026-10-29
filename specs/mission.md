@@ -27,6 +27,11 @@ Let similarity, not keywords, drive discovery:
 - **Transparency** — Similarity scores are visible so users can understand and trust rankings.
 - **Simplicity** — A single, focused pipeline: describe → collect → embed → rank.
 
+## Process Invariants
+
+- Engineering-process rules (merge gates, spec–test agreement, no silent
+  spec drift) live in [process.md](process.md).
+
 ## Cost Constraints
 
 - **Running costs must be kept as low as possible.** This is a small personal project with no budget for expensive infrastructure.
