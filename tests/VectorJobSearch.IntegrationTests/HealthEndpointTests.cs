@@ -19,6 +19,7 @@
 using System.Net;
 using System.Text.Json;
 using Json.Schema;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace VectorJobSearch.IntegrationTests;
@@ -101,27 +102,28 @@ public static class AppFactory
         "VJS_", "OPENAI_", "AZURE_", "ADZUNA_", "REED_", "CONNECTIONSTRING_",
     ];
 
-    private static HttpClient? _sharedClient;
+    private static WebApplicationFactory<Program>? _sharedFactory;
 
     public static HttpClient CreateClient()
     {
-        if (_sharedClient is not null) return _sharedClient;
-
-        foreach (var prefix in ExternalServicePrefixes)
+        if (_sharedFactory is null)
         {
-            var names = Environment.GetEnvironmentVariables().Keys
-                .Cast<string>()
-                .Where(k => k.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-            foreach (var name in names)
-                Environment.SetEnvironmentVariable(name, null);
+            foreach (var prefix in ExternalServicePrefixes)
+            {
+                var names = Environment.GetEnvironmentVariables().Keys
+                    .Cast<string>()
+                    .Where(k => k.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+                foreach (var name in names)
+                    Environment.SetEnvironmentVariable(name, null);
+            }
+
+            _sharedFactory = new WebApplicationFactory<Program>();
         }
 
-        // Implementation note (green phase): WebApplicationFactory<Program> from
-        // Microsoft.AspNetCore.Mvc.Testing, referencing VectorJobSearch.Api
-        // with InternalsVisibleTo or a public partial Program class.
-        throw new NotImplementedException(
-            "P0-HEALTH: backend API project does not exist yet (red phase)");
+        // Reuse the host, but hand each caller its own client: callers dispose
+        // their client (`using var`), which must not kill the shared host.
+        return _sharedFactory.CreateClient();
     }
 }
 
