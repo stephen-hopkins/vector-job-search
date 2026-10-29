@@ -16,10 +16,10 @@
 // client for the API project with all external-service environment variables
 // removed.
 
-using System.Net;
-using System.Text.Json;
 using Json.Schema;
 using Microsoft.AspNetCore.Mvc.Testing;
+using System.Net;
+using System.Text.Json;
 using Xunit;
 
 namespace VectorJobSearch.IntegrationTests;
