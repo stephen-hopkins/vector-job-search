@@ -202,11 +202,18 @@ P0-CI-RED() {  # N-AC-1: a run with an intentionally failing test reports failur
 P0-HERMETIC() {  # N-AC-2: full suites pass with outbound network blocked
   local status
   require_unshare || { mark_skip "$FUNCNAME" "unshare not available (needs userns)"; return; }
-  # This test runs the whole suite except itself under unshare; green phase
-  # wires in real build/test commands as they come to exist.
-  unshare -rn true 2>/dev/null \
-    && mark_fail "$FUNCNAME" "hermetic run wired but no suites executed (no tests exist yet — red by definition)" \
-    || mark_fail "$FUNCNAME" "cannot run commands in isolated netns"
+  # Green phase: run the real backend and frontend test suites with outbound
+  # network blocked. Loopback is raised explicitly (a fresh netns starts with
+  # lo DOWN; the in-memory test client and local testhost sockets need it).
+  # Both suites must exit 0, proving no test calls an external API.
+  # Note: assumes NuGet/npm caches are warm (dotnet restore outside the netns
+  # would need network); N-AC-2 targets test behavior, not package restore.
+  local log="$WORKDIR/hermetic.log"
+  unshare -rn bash -c \
+    "ip link set lo up && cd '$REPO_ROOT' && dotnet test >'$log' 2>&1 && npm --prefix src/web test >>'$log' 2>&1"
+  status=$?
+  [ $status -eq 0 ] && mark_pass "$FUNCNAME" \
+    || { cat "$log"; mark_fail "$FUNCNAME" "suites failed under network isolation (exit $status)"; }
 }
 
 # ---------------------------------------------------------------- N-AC-3

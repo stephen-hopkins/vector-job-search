@@ -3,15 +3,14 @@
   // Deny the main agent from making git changes; the git-operations subagent
   // (.opencode/agents/git-operations.md) allows these commands itself, and
   // agent-specific rules take precedence over these global rules.
+  // Branch creation/switching (git branch, git switch, git checkout -b) is
+  // allowed for the main agent.
   "permissions": [
     { "action": "shell", "resource": "git add*", "effect": "deny" },
     { "action": "shell", "resource": "git commit*", "effect": "deny" },
     { "action": "shell", "resource": "git push*", "effect": "deny" },
     { "action": "shell", "resource": "git merge*", "effect": "deny" },
     { "action": "shell", "resource": "git rebase*", "effect": "deny" },
-    { "action": "shell", "resource": "git switch -c*", "effect": "deny" },
-    { "action": "shell", "resource": "git checkout -b*", "effect": "deny" },
-    { "action": "shell", "resource": "git branch*", "effect": "deny" },
     { "action": "shell", "resource": "git restore*", "effect": "deny" },
     { "action": "shell", "resource": "git reset*", "effect": "deny" },
     { "action": "shell", "resource": "gh pr create*", "effect": "deny" }
