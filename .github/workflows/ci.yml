@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   build-test:
     runs-on: ubuntu-latest
@@ -16,10 +19,10 @@ jobs:
         with:
           global-json-file: global.json
 
-      - name: Setup Node.js 24
+      - name: Setup Node.js (from src/web/package.json engines)
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version-file: src/web/package.json
 
       # Backend gates
       - name: P0-BUILD-BACKEND (dotnet build)

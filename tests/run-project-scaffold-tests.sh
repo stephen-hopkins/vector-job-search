@@ -206,11 +206,14 @@ P0-HERMETIC() {  # N-AC-2: full suites pass with outbound network blocked
   # network blocked. Loopback is raised explicitly (a fresh netns starts with
   # lo DOWN; the in-memory test client and local testhost sockets need it).
   # Both suites must exit 0, proving no test calls an external API.
+  # Note: assumes NuGet/npm caches are warm (dotnet restore outside the netns
+  # would need network); N-AC-2 targets test behavior, not package restore.
+  local log="$WORKDIR/hermetic.log"
   unshare -rn bash -c \
-    "ip link set lo up && cd '$REPO_ROOT' && dotnet test >/dev/null 2>&1 && npm --prefix src/web test >/dev/null 2>&1"
+    "ip link set lo up && cd '$REPO_ROOT' && dotnet test >'$log' 2>&1 && npm --prefix src/web test >>'$log' 2>&1"
   status=$?
   [ $status -eq 0 ] && mark_pass "$FUNCNAME" \
-    || mark_fail "$FUNCNAME" "suites failed under network isolation (exit $status)"
+    || { cat "$log"; mark_fail "$FUNCNAME" "suites failed under network isolation (exit $status)"; }
 }
 
 # ---------------------------------------------------------------- N-AC-3
