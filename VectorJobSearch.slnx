@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/VectorJobSearch.Api/VectorJobSearch.Api.csproj" />
+    <Project Path="src/VectorJobSearch.Application/VectorJobSearch.Application.csproj" />
+    <Project Path="src/VectorJobSearch.Domain/VectorJobSearch.Domain.csproj" />
+    <Project Path="src/VectorJobSearch.Infrastructure/VectorJobSearch.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/VectorJobSearch.IntegrationTests/VectorJobSearch.IntegrationTests.csproj" />
+    <Project Path="tests/VectorJobSearch.UnitTests/VectorJobSearch.UnitTests.csproj" />
+  </Folder>
+</Solution>

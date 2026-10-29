@@ -45,6 +45,24 @@ Each entry:
 - Lesson: (one sentence. If none, say "no lesson" — that's allowed.)
 - Change to constitution/specs: (or "none")
 
+## Learning log format (append-only)
+
+### 2026-10-29 — Phase 1 — agent hand-edited files instead of using dotnet CLI
+
+- What I expected: scaffold tasks (solution, projects, references, packages) would be created via dotnet CLI commands (`dotnet new sln|classlib|xunit`, `dotnet sln add`, `dotnet add reference/package`), as the tasks.md conventions required.
+- What happened: the agent directly authored/edited files where CLI commands were the instructed mechanism.
+- Signal: review of the scaffold commits showed hand-edited artifacts where the CLI should have been the only path.
+- Lesson: instructions that live only in the session prompt don't survive — tool-preference rules must be embedded in a reusable agent skill.
+- Change to constitution/specs: none yet — fix was to edit the implementation-mode prompt; likely to be folded into a new agent skill.
+
+### 2026-10-29 — Phase 1 — branch name used spec-<id> style, not semantic format
+
+- What I expected: the working branch to follow the repo's Conventional-Commits-derived naming (`<type>/<short-kebab-description>`, e.g. `feat/001-project-scaffold`), matching the committer agent's branch convention.
+- What happened: the implementation session ran on a branch named `spec-001/scaffold` — a spec-Kit-style name that never matched the convention.
+- Signal: branch name visible in the commit review didn't match the pattern used by all merged PRs.
+- Lesson: branch-naming rules belong in the implementation prompt (and eventually the agent skill), not just in the committer agent — the implementing session is the one that creates the branch.
+- Change to constitution/specs: none — fix was to add a branch-naming bullet to the implementation-mode prompt in learning/plan.md (both HITL and HOTL variants); likely to be folded into the same future agent skill.
+
 ## Phase milestones
 
 | Phase                                      | Status | Exit condition                                                 |

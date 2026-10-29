@@ -150,19 +150,10 @@ the tool's.
 
 ### Prompt
 
-```text
-Autonomous implementation mode. Target: L3 supervision.
-- Implement the tasks in specs/<feature>/tasks.md in order.
-- For each task: implement, run the mapped tests from the traceability
-  table, and attach a one-line evidence statement ("test X passes,
-  command Y output Z").
-- STOP and ask only when: a spec condition is ambiguous, a task requires
-  an irreversible action (migrations, external API writes, deletes), or
-  the design doc conflicts with the code.
-- Everything else: proceed without asking. Log decisions to
-  decisions.md with rationale instead of seeking approval.
-End with a summary table: task → status → evidence → spec condition IDs.
-```
+Use the **HOTL variant of Prompt 3 (Implement)** from the Prompt Library
+below — that prompt IS the autonomous-implementation mode, with the
+escalation criteria explicit. Run it on the LAST feature of this phase;
+use the HITL variant (with phase-gate halts) for the earlier features.
 
 The skill being taught: telling an agent when NOT to ask. Under-specified
 escalation criteria produce an agent that either steamrolls or nags.
@@ -405,13 +396,23 @@ dependency order (parallel [P] tasks may be interleaved):
   command Y output Z").
 - Halt after each user-story phase and report: tasks done, evidence,
   spec conditions satisfied. Wait for my review before continuing.
+- Prefer CLI scaffolding/management commands over directly creating or
+  editing files — especially for solutions, projects, and dependencies
+  (e.g. `dotnet new sln|classlib|webapi|xunit`, `dotnet sln add`,
+  `dotnet add reference`, `dotnet add package`; `npm create vite`;
+  `npm install`). Edit generated files only to customize what the CLI
+  cannot express.
+- Work on a branch named `<type>/<short-kebab-description>` following
+  Conventional Commits types (e.g. `feat/001-project-scaffold`,
+  `fix/health-route-405`). If you inherit a branch with another style,
+  rename it with `git branch -m` before committing.
 - STOP and ask only when: a spec condition is ambiguous, a task
   requires an irreversible action (migrations, external API writes,
   deletes), or plan.md conflicts with the code.
 ```
 
-HOTL variant (Phase 2 last feature onward — merges with the existing
-autonomous-implementation prompt):
+HOTL variant (Phase 2 last feature onward — this is the autonomous-
+implementation mode referenced in Phase 2):
 
 ```text
 Autonomous implementation mode. Target: L3 supervision.
@@ -419,6 +420,16 @@ Autonomous implementation mode. Target: L3 supervision.
 - For each task: implement, run the mapped tests from the traceability
   table, and attach a one-line evidence statement ("test X passes,
   command Y output Z").
+- Prefer CLI scaffolding/management commands over directly creating or
+  editing files — especially for solutions, projects, and dependencies
+  (e.g. `dotnet new sln|classlib|webapi|xunit`, `dotnet sln add`,
+  `dotnet add reference`, `dotnet add package`; `npm create vite`;
+  `npm install`). Edit generated files only to customize what the CLI
+  cannot express.
+- Work on a branch named `<type>/<short-kebab-description>` following
+  Conventional Commits types (e.g. `feat/001-project-scaffold`,
+  `fix/health-route-405`). If you inherit a branch with another style,
+  rename it with `git branch -m` before committing.
 - STOP and ask only when: a spec condition is ambiguous, a task requires
   an irreversible action (migrations, external API writes, deletes), or
   the design doc conflicts with the code.
