@@ -1,0 +1,48 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET SDK (from global.json)
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Setup Node.js (from src/web/package.json engines)
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: src/web/package.json
+
+      # Backend gates
+      - name: P0-BUILD-BACKEND (dotnet build)
+        run: dotnet build
+
+      - name: P0-TEST-BACKEND (dotnet test)
+        run: dotnet test
+
+      - name: P0-FORMAT-BACKEND (dotnet format --verify-no-changes)
+        run: dotnet format --verify-no-changes
+
+      # Frontend gates — install must precede every other frontend step (E-1)
+      - name: Install frontend dependencies
+        run: npm install --prefix src/web
+
+      - name: P0-BUILD-FRONTEND (npm run build)
+        run: npm --prefix src/web run build
+
+      - name: P0-TYPECHECK-FRONTEND (npm run typecheck)
+        run: npm --prefix src/web run typecheck
+
+      - name: P0-TEST-FRONTEND (npm test)
+        run: npm --prefix src/web test

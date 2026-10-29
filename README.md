@@ -41,29 +41,59 @@ The project's constitution lives in the [`specs/`](specs/) folder:
 
 ## Getting Started
 
-> **Note:** This project is in early development. Instructions below will be finalized as the project takes shape.
-
 ### Prerequisites
 
-- TBC
+- [.NET SDK 10](https://dotnet.microsoft.com/download/dotnet/10.0) (the pinned version lives in [`global.json`](global.json))
+- [Node.js](https://nodejs.org/) >= 24 (includes npm)
 
-### Installation
+### Backend
 
+<!-- gate: P0-BUILD-BACKEND -->
 ```bash
-git clone <repository-url>
-cd vector-job-search
-# Installation steps coming soon
+dotnet build
 ```
 
-### Usage
-
+<!-- gate: P0-TEST-BACKEND -->
 ```bash
-# Usage instructions coming soon
+dotnet test
 ```
 
-## Configuration
+<!-- gate: P0-FORMAT-BACKEND -->
+```bash
+dotnet format --verify-no-changes
+```
 
-Configuration values are TBD. They will probably include endpoints and API keys.
+### Frontend
+
+Install dependencies first — the frontend build does not work before this step:
+
+<!-- gate: P0-FRONTEND-INSTALL-ORDER -->
+```bash
+npm install --prefix src/web
+```
+
+<!-- gate: P0-BUILD-FRONTEND -->
+```bash
+npm --prefix src/web run build
+```
+
+<!-- gate: P0-TYPECHECK-FRONTEND -->
+```bash
+npm --prefix src/web run typecheck
+```
+
+<!-- gate: P0-TEST-FRONTEND -->
+```bash
+npm --prefix src/web test
+```
+
+### Run the backend
+
+```bash
+dotnet run --project src/VectorJobSearch.Api
+```
+
+The API listens on the port configured in `src/VectorJobSearch.Api/Properties/launchSettings.json` (default `http://localhost:5046`). Once running, the health route is available at `http://localhost:5046/health`.
 
 ## License
 
