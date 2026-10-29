@@ -1,0 +1,11 @@
+# SDD ledger — plan: specs/001-project-scaffold/plan.md (tasks: specs/001-project-scaffold/tasks.md)
+
+Pre-flight: T1.x are independent file creations; T1.5/T1.6 amend existing RED artifacts only. No conflicts between producing/consuming tasks found beyond those tasks.md itself sequences.
+
+Phase 1: complete (commit 8dba45f). Evidence: bash tests/run-project-scaffold-tests.sh full run — 7 PASS / 11 FAIL (no crashes); P0-DOTNET-SDK-PIN/NO-TERRAFORM/NO-SECRETS/EDITORCONFIG/BUILD-BACKEND/BUILD-NOWARN/FORMAT-BACKEND pass, scaffold-dependent IDs fail as test-plan predicts.
+Task T1.6: complete — schema $id already pointed at specs/.../contracts/ path; verified, no change needed (ruling: task description matched an already-fixed file).
+Phase 2: complete (commit b6c8a13). Evidence: dotnet test → "Failed: 4 ... Total: 4" all NotImplementedException from AppFactory.CreateClient(); full shell suite 6 PASS / 12 FAIL, zero crashes (T2.3).
+Note: dotnet new sln produced VectorJobSearch.slnx (.NET 10 default), not .sln. Ruling: keep slnx — the CLI's native format; all ACs run dotnet commands, none inspect the file extension.
+
+Restructure (user direction, commit 1813c16): tests/VectorJobSearch.Api.Tests -> tests/VectorJobSearch.IntegrationTests (health suite + Mvc.Testing/JsonSchema.Net) + new tests/VectorJobSearch.UnitTests (empty in Phase 0). Both xUnit, both in slnx, both run by dotnet test. spec.md Clarification Q6 added; plan/tasks/test-plan updated. Evidence: dotnet sln list shows both; dotnet test -> Failed: 4, all NotImplementedException from AppFactory.CreateClient() (RED preserved); dotnet build 0 errors. tasks.md T2.1/T2.2 marked [X] with evidence.
+Phase 3 (US1/B1): complete (branch feat/001-scaffold-phase3-us1). Rulings: (1) T3.1 - P0-BUILD-BACKEND already passed at phase start (Phase 1 made build green); observed PASS not FAIL, recorded as satisfied plan defect. (2) T3.2 - P0-FRONTEND-INSTALL-ORDER failed for the right reason (README gate markers missing); observed before fix. (3) T3.3 - appsettings.json already existed from webapi template; no change needed. (4) T3.4 - added vitest/config type reference to vite.config.ts so tsc -b accepts vitest test block; type-only, behavior-neutral. Evidence: T3.6 - 7/7 PASS. AC-1..AC-4, E-1, E-4, SC-2 satisfied.
