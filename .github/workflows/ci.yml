@@ -8,6 +8,17 @@ permissions:
   contents: read
 
 jobs:
+  # Task-closure gate (specs/process.md "Task closure is commit-atomic").
+  # ADVISORY during shakedown — flip to ENFORCE=1 after 2-3 clean real PRs.
+  task-closure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # need merge-base history for the diff
+      - name: Task closure check (advisory)
+        run: bash tests/task-closure-check.sh origin/main
+
   build-test:
     runs-on: ubuntu-latest
 

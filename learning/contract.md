@@ -87,6 +87,14 @@ Each entry:
 - Lesson: adopt external process frameworks only where they enforce something the repo doesn't already verify mechanically — otherwise their artifact conventions collide with yours at the session boundary.
 - Change to constitution/specs: superpowers plugin removed from ~/.config/opencode/opencode.json; learning/plan.md Phase 1 step 1 no longer active (TDD enforcement carried by the spec-driven gates + CI); .superpowers/ ledger retained read-only as historical evidence.
 
+### 2026-11-04 — Phase 1 — task-closure CI check added (advisory)
+
+- What I expected: the new "task closure is commit-atomic" rule would need a deterministic gate to survive the next session boundary, per the Phase 3 principle (policy gates, not vigilance).
+- What happened: added `tests/task-closure-check.sh` — parses open tasks in `specs/*/tasks.md`, extracts the file paths each task names, and flags any PR that changes those paths without flipping the task `[X]`; also requires every newly-`[X]` task to carry an evidence statement. Wired into CI as a first, cheap job in ADVISORY mode (warnings, exit 0); first run on this branch correctly flagged the 11 evidence-less `[X]` flips from the manual reconciliation.
+- Signal: n/a (proactive; implements the lesson of the takeover entry).
+- Lesson: no lesson — the advisory run immediately caught a real violation (my own reconciliation commit lacked per-task evidence), validating the check before enforcement.
+- Change to constitution/specs: specs/process.md merge gate now names the check; flip to ENFORCE=1 after 2-3 clean real PRs.
+
 ## Phase milestones
 
 | Phase                                      | Status | Exit condition                                                 |

@@ -21,7 +21,9 @@ Functionality is submitted via PRs. A task is closed by marking it `[X]` in
   whose diff turns a mapped test green (or completes the task's file
   changes) also contains the corresponding `[ ]` → `[X]` change in
   `specs/<feature>/tasks.md; a PR that completes work without closing its
-  tasks fails review.
+  tasks fails review. (Mechanically checked by
+  `tests/task-closure-check.sh` in CI — advisory during shakedown,
+  enforcing once validated.)
 - **No silent spec drift:** If implementation legitimately diverges from the
   spec, the spec and plan are updated via a recorded delta in the same PR —
   never silently. Verifiable: any PR whose behavior differs from
