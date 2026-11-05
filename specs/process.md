@@ -14,6 +14,16 @@ Functionality is submitted via PRs. A task is closed by marking it `[X]` in
   tests pass. Verifiable: every `[X]` task in `tasks.md` has an evidence
   statement referencing a passing test ID from the traceability table
   (test ID → spec acceptance condition).
+- **Task closure is commit-atomic:** the commit or PR that completes a
+  task marks it `[X]` in `specs/<feature>/tasks.md` in the same change,
+  with its evidence statement — progress may additionally be logged
+  elsewhere (e.g. a ledger file), never instead of. Verifiable: any PR
+  whose diff turns a mapped test green (or completes the task's file
+  changes) also contains the corresponding `[ ]` → `[X]` change in
+  `specs/<feature>/tasks.md; a PR that completes work without closing its
+  tasks fails review. (Mechanically checked by
+  `tests/task-closure-check.sh` in CI — advisory during shakedown,
+  enforcing once validated.)
 - **No silent spec drift:** If implementation legitimately diverges from the
   spec, the spec and plan are updated via a recorded delta in the same PR —
   never silently. Verifiable: any PR whose behavior differs from

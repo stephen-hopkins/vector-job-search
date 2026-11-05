@@ -71,6 +71,30 @@ Each entry:
 - Lesson: process rules must name their actual enforcement point (task closure via evidence statements; PR merge via CI) instead of borrowing a nearby event's name.
 - Change to constitution/specs: specs/process.md rewritten to gate `[X]` marking on passing mapped tests; "merge" retained only where literally a PR merge.
 
+### 2026-11-04 — Phase 1 — Superpowers takeover: tasks.md frozen at 2/24 while all work completed
+
+- What I expected: the implementing session would keep marking tasks `[X]` in `specs/001-project-scaffold/tasks.md` per the implement prompt and specs/process.md.
+- What happened: phases 1–2 followed the prompt (T2.1/T2.2 ticked with evidence). From phase 3 the session loaded the Superpowers `executing-plans` skill, which mandates its own progress ledger — `.superpowers/sdd/<plan>/progress.md` appeared in commit 3ce3949 and every subsequent phase commit updated it while tasks.md was never touched (stale at 2/24 until manually reconciled). The skill's hard-coded artifact silently outcompeted both the session prompt and the constitution.
+- Signal: git history — tasks.md diffs go to zero after 1813c16 while ledger commits continue through 54974d1; ledger created retroactively in past tense for phases 1–2.
+- Lesson: a loaded skill beats a session prompt and an unenforced constitution every time — imported process tooling must be either aligned with the repo's declared artifacts or gated by a deterministic check, never trusted to coexist.
+- Change to constitution/specs: specs/process.md gains "Task closure is commit-atomic" (mark `[X]` in the same commit/PR that completes the task; external ledgers are additive, never substitutes). Superpowers plugin uninstalled (see next entry).
+
+### 2026-11-04 — Phase 1 — Superpowers uninstalled
+
+- What I expected: Superpowers would supply in-session TDD enforcement without changing the artifact flow.
+- What happened: its plan-execution skill rewired progress reporting into its own ledger and displaced tasks.md closure (previous entry); TDD enforcement was redundant with the repo's own red-green gates (traceability table + shell suite + CI).
+- Signal: the phase-3+ commits showing ledger-instead-of-tasks.md divergence; no Superpowers-enforced behavior the repo's own tests didn't already enforce.
+- Lesson: adopt external process frameworks only where they enforce something the repo doesn't already verify mechanically — otherwise their artifact conventions collide with yours at the session boundary.
+- Change to constitution/specs: superpowers plugin removed from ~/.config/opencode/opencode.json; learning/plan.md Phase 1 step 1 no longer active (TDD enforcement carried by the spec-driven gates + CI); .superpowers/ ledger retained read-only as historical evidence.
+
+### 2026-11-04 — Phase 1 — task-closure CI check added (advisory)
+
+- What I expected: the new "task closure is commit-atomic" rule would need a deterministic gate to survive the next session boundary, per the Phase 3 principle (policy gates, not vigilance).
+- What happened: added `tests/task-closure-check.sh` — parses open tasks in `specs/*/tasks.md`, extracts the file paths each task names, and flags any PR that changes those paths without flipping the task `[X]`; also requires every newly-`[X]` task to carry an evidence statement. Wired into CI as a first, cheap job in ADVISORY mode (warnings, exit 0); first run on this branch correctly flagged the 11 evidence-less `[X]` flips from the manual reconciliation.
+- Signal: n/a (proactive; implements the lesson of the takeover entry).
+- Lesson: no lesson — the advisory run immediately caught a real violation (my own reconciliation commit lacked per-task evidence), validating the check before enforcement.
+- Change to constitution/specs: specs/process.md merge gate now names the check; flip to ENFORCE=1 after 2-3 clean real PRs.
+
 ## Phase milestones
 
 | Phase                                      | Status | Exit condition                                                 |
