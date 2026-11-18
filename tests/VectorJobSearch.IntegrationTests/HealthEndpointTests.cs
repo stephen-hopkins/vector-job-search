@@ -118,7 +118,20 @@ public static class AppFactory
                     Environment.SetEnvironmentVariable(name, null);
             }
 
-            _sharedFactory = new WebApplicationFactory<Program>();
+            // Spec 002 (plan.md R-3): the Api now requires a valid embedding_provider
+            // section to start. Supply a test-only dummy configuration — provider
+            // openai-compat, base URL http://localhost:0/v1, dummy key, model
+            // text-embedding-3-small. No network call is ever made to the dummy endpoint
+            // (nothing resolves the generator during the health suite; port 0 is not
+            // reachable in-process regardless).
+            _sharedFactory = new WebApplicationFactory<Program>()
+                .WithWebHostBuilder(webHostBuilder =>
+                {
+                    webHostBuilder.UseSetting("embedding_provider:provider", "openai-compat");
+                    webHostBuilder.UseSetting("embedding_provider:base_url", "http://localhost:0/v1");
+                    webHostBuilder.UseSetting("embedding_provider:api_key", "dummy-integration-test-key");
+                    webHostBuilder.UseSetting("embedding_provider:model", "text-embedding-3-small");
+                });
         }
 
         // Reuse the host, but hand each caller its own client: callers dispose

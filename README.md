@@ -33,6 +33,30 @@ The project's constitution lives in the [`specs/`](specs/) folder:
 4. **Vector search** — Each listing is embedded and compared to your ideal job embedding using cosine similarity.
 5. **Ranked results** — Browse a ranked list of job listings, best matches first.
 
+### Embedding provider configuration
+
+Text embeddings are produced by a pluggable provider behind the `Microsoft.Extensions.AI` abstraction (`IEmbeddingGenerator<string, Embedding<float>>`). Any OpenAI-compatible endpoint is selected via configuration alone (spec 002):
+
+```json
+"embedding_provider": {
+  "provider": "openai-compat",
+  "base_url": "https://api.nano-gpt.example/v1",
+  "model": "text-embedding-3-small"
+}
+```
+
+The API key is **never committed** — it comes from the environment variable `EmbeddingProvider__ApiKey` (or a .NET user-secret):
+
+```bash
+# environment variable
+export EmbeddingProvider__ApiKey="sk-..."
+
+# or user-secrets (development)
+dotnet user-secrets set --project src/VectorJobSearch.Api --id embedding_provider:api_key "sk-..."
+```
+
+Startup validates the section and **exits non-zero** before any network call if the provider name is missing/unknown (accepted values are listed in the error), the API key is missing, or the base URL is missing/unparseable.
+
 ## Features
 
 - Embedding-based matching against an ideal job profile
