@@ -1,4 +1,5 @@
 using System.Text.Json;
+using VectorJobSearch.Application.Embedding;
 using VectorJobSearch.Infrastructure.Embedding;
 
 namespace VectorJobSearch.UnitTests.Embedding;
@@ -32,7 +33,7 @@ public class OpenAiCompatContractTests
 
         // Given non-empty text and a working provider, the vector's dimensionality matches
         // the provider's configured model output.
-        Assert.Equal(EmbeddingTestConfig.ValidSettings().Dimensions, result.Vector.Count);
+        Assert.Equal(EmbeddingTestConfig.ValidSettings().Dimensions, result.Vector.Length);
         Assert.All(result.Vector.ToArray(), value => Assert.True(float.IsFinite(value)));
     }
 

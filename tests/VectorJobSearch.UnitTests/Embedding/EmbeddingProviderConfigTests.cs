@@ -39,12 +39,14 @@ public class EmbeddingProviderConfigTests
         // arrives via the environment variable EmbeddingProvider__ApiKey (or user-secrets).
         var repoRoot = FindRepoRoot()
             ?? throw new InvalidOperationException("repository root not found");
+        // The in-memory collection merges over the JSON file (case-insensitive keys):
+        // the env var name EmbeddingProvider__ApiKey binds to embedding_provider:api_key.
         var configuration = new ConfigurationBuilder()
             .SetBasePath(repoRoot)
             .AddJsonFile(Path.Combine("src", "VectorJobSearch.Api", "appsettings.json"))
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["EmbeddingProvider__ApiKey"] = "env-key-123",
+                ["embedding_provider:api_key"] = "env-key-123",
             })
             .Build();
 
@@ -57,7 +59,8 @@ public class EmbeddingProviderConfigTests
         Assert.Contains("api.nano-gpt.example", settings.BaseUrl); // committed placeholder
         Assert.Equal("text-embedding-3-small", settings.Model);
         // …and api_key from the EmbeddingProvider__ApiKey environment variable, bound into
-        // the embedding_provider:api_key setting (case-insensitive config key).
+        // the embedding_provider:api_key setting (case-insensitive config key; the env
+        // var name maps to the section via the __ separator).
         Assert.Equal("env-key-123", settings.ApiKey);
 
         static string? FindRepoRoot()

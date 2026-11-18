@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using VectorJobSearch.Application.Embedding;
 using VectorJobSearch.Infrastructure.Embedding;
 
 namespace VectorJobSearch.UnitTests.Embedding;
@@ -60,7 +61,7 @@ public class EmbeddingAbstractionTests
         // identifier that produced it.
         Assert.All(result.Vector.ToArray(), value => Assert.True(float.IsFinite(value)));
         Assert.Equal(settings.Dimensions, result.Dimensions);
-        Assert.Equal(result.Vector.Count, result.Dimensions);
+        Assert.Equal(result.Vector.Length, result.Dimensions);
         Assert.Equal(EmbeddingTestConfig.Model, result.ModelId);
 
         // Edge case: non-finite values (NaN / ±Infinity) in a remote response violate the

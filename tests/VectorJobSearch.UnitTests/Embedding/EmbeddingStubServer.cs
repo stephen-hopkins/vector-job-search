@@ -84,9 +84,11 @@ public sealed class EmbeddingStubServer : IDisposable
         return sb.ToString();
     }
 
-    /// <summary>A payload with NaN / +Infinity / -Infinity in the vectors (spec Edge Cases).</summary>
+    /// <summary>A payload whose vectors overflow to ±Infinity when parsed as float
+    /// (JSON number 1e999 → float +Infinity; the literal NaN/Infinity tokens are not
+    /// valid JSON). Spec Edge Cases: non-finite values in a remote response.</summary>
     private static string NonFinitePayload()
-        => "{\"data\":[{\"embedding\":[NaN,Infinity,-Infinity,1],\"index\":0}]}";
+        => "{\"data\":[{\"embedding\":[1e999,-1e999,1,2],\"index\":0}]}";
 
     /// <summary>Creates (once) the in-process TestServer and returns an HttpClient wired to it.</summary>
     public HttpClient CreateClient()
