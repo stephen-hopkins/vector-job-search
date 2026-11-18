@@ -1,9 +1,9 @@
-using System.ClientModel;
-using System.ClientModel.Primitives;
-using System.Net;
 using Microsoft.Extensions.AI;
 using OpenAI;
 using OpenAI.Embeddings;
+using System.ClientModel;
+using System.ClientModel.Primitives;
+using System.Net;
 
 namespace VectorJobSearch.Infrastructure.Embedding;
 

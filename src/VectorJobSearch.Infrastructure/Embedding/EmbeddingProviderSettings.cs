@@ -57,11 +57,18 @@ public sealed class EmbeddingProviderSettings
     public static EmbeddingProviderSettings Bind(IConfiguration configuration)
         => new()
         {
+            // configuration["embedding_provider:api_key"] picks up the appsettings key AND the
+            // user-secret "embedding_provider:api_key"; the env var name EmbeddingProvider__ApiKey
+            // binds under the section name "EmbeddingProvider" (double underscore → colon), so both
+            // spellings are read, preferring whichever is non-empty.
             Provider = configuration[ProviderKey] ?? string.Empty,
             BaseUrl = configuration[BaseUrlKey] ?? string.Empty,
-            ApiKey = configuration[ApiKeyKey] ?? string.Empty,
+            ApiKey = FirstNonEmpty(configuration[ApiKeyKey], configuration["EmbeddingProvider:ApiKey"]) ?? string.Empty,
             Model = configuration[ModelKey] ?? string.Empty,
         };
+
+    private static string? FirstNonEmpty(params string?[] values)
+        => values.FirstOrDefault(v => !string.IsNullOrEmpty(v));
 
     /// <summary>
     /// Eager startup validation (AC-5.2): throws <see cref="EmbeddingProviderConfigurationException"/>

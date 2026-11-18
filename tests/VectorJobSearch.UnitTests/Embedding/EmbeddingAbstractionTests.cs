@@ -1,7 +1,7 @@
-using System.Text.Json;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json;
 using VectorJobSearch.Application.Embedding;
 using VectorJobSearch.Infrastructure.Embedding;
 
