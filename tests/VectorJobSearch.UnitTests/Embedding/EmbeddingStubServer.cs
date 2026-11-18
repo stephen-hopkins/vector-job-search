@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
@@ -7,18 +8,20 @@ namespace VectorJobSearch.UnitTests.Embedding;
 
 /// <summary>
 /// In-process stub for an OpenAI-compatible embeddings endpoint (plan.md R-5).
-/// Records every request (method, path, Authorization header, JSON body incl. model
-/// name and input array order) and is scriptable with responses: success payload
-/// (data shuffled by "index" so order-mapping is exercised), HTTP 429, HTTP 5xx,
-/// non-429 4xx, connection drop, and vectors containing non-finite values.
-/// Zero external HTTP — the provider's HttpClient is TestServer.CreateClient().
+/// Serves POST {BaseUrl}/embeddings (tests use base URL http://localhost:0/v1).
+/// Records every request (method, path, Authorization header, raw JSON body incl.
+/// model name and input array) and is scriptable per request: success payload
+/// (data shuffled by "index" so order mapping is exercised), HTTP 429, HTTP 5xx,
+/// non-429 4xx, connection drop, and a vector containing non-finite values
+/// (NaN / ±Infinity). Zero external HTTP — the provider's HttpClient is
+/// TestServer.CreateClient().
 /// </summary>
 public sealed class EmbeddingStubServer : IDisposable
 {
     /// <summary>A recorded embeddings request.</summary>
     public sealed record RecordedRequest(string Method, string Path, string? Authorization, string Body);
 
-    /// <summary>A stub response mode.</summary>
+    /// <summary>Scriptable response modes.</summary>
     public enum ResponseMode
     {
         Success,
@@ -30,79 +33,80 @@ public sealed class EmbeddingStubServer : IDisposable
     }
 
     private readonly List<RecordedRequest> _requests = new();
+    private WebApplication? _app;
+    private HttpClient? _client;
 
-    /// <summary>Response mode to use for the next (or every) request. Default: Success.</summary>
+    /// <summary>Persistent response mode (used once <see cref="ModeQueue"/> is empty). Default: Success.</summary>
     public ResponseMode Mode { get; set; } = ResponseMode.Success;
 
-    /// <summary>Response mode applied only once, then resets to <see cref="Mode"/> (used by T-4.3 retry sequencing).</summary>
+    /// <summary>Per-request response modes, consumed first (T-4.3 retry sequencing: 429 then 5xx then success).</summary>
     public Queue<ResponseMode> ModeQueue { get; } = new();
 
-    /// <summary>The number of embedding vectors the stub returns per request.</summary>
+    /// <summary>Dimensionality of each vector the stub returns.</summary>
     public int Dimensions { get; set; } = 3;
 
     /// <summary>All recorded requests, in order.</summary>
     public IReadOnlyList<RecordedRequest> Requests => _requests;
 
-    /// <summary>Number of requests recorded so far.</summary>
+    /// <summary>Number of requests recorded so far (asserted == 0 for "no network call" ACs).</summary>
     public int RequestCount => _requests.Count;
 
-    private ResponseMode NextMode()
-    {
-        if (ModeQueue.Count > 0)
-        {
-            return ModeQueue.Dequeue();
-        }
-        return Mode;
-    }
+    private ResponseMode NextMode() => ModeQueue.Count > 0 ? ModeQueue.Dequeue() : Mode;
 
-    /// <summary>A success payload: {"model": "...", "data": [{"embedding": [floats], "index": n}]} in shuffled order.</summary>
-    private string SuccessPayload()
+    /// <summary>Success payload with <paramref name="count"/> data entries, deliberately shuffled
+    /// by "index" so response-index → input-order mapping is exercised. Vector values encode
+    /// their origin index: value(origin, d) = origin * Dimensions + d + 1.</summary>
+    private static string SuccessPayload(int count, int dimensions)
     {
-        var sb = new StringBuilder();
-        sb.Append("{\"model\":\"text-embedding-3-small\",\"data\":[");
-        // Deliberately shuffled index order so response-index→input-order mapping is exercised.
-        int[] shuffled = new[] { 2, 0, 1 };
-        bool first = true;
-        for (var i = 0; i < shuffled.Length; i++)
+        var sb = new StringBuilder("{\"data\":[");
+        for (var slot = 0; slot < count; slot++)
         {
-            if (!first)
+            // Reverse (shuffled) origin-index order.
+            var origin = count - 1 - slot;
+            if (slot > 0)
             {
                 sb.Append(',');
             }
-            first = false;
             sb.Append("{\"embedding\":[");
-            for (var d = 0; d < Dimensions; d++)
+            for (var d = 0; d < dimensions; d++)
             {
                 if (d > 0)
                 {
                     sb.Append(',');
                 }
-                sb.Append((shuffled[i] * Dimensions + d).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture));
+                sb.Append((origin * dimensions + d + 1).ToString(System.Globalization.CultureInfo.InvariantCulture));
             }
             sb.Append("],\"index\":");
-            sb.Append(shuffled[i]);
+            sb.Append(origin);
             sb.Append('}');
         }
         sb.Append("]}");
         return sb.ToString();
     }
 
-    /// <summary>A success payload with NaN / +Infinity / -Infinity in the vectors (spec Edge Cases).</summary>
-    private string NonFinitePayload()
-        => "{\"model\":\"text-embedding-3-small\",\"data\":[{\"embedding\":[NaN,Infinity,-Infinity,1],\"index\":0}]}";
+    /// <summary>A payload with NaN / +Infinity / -Infinity in the vectors (spec Edge Cases).</summary>
+    private static string NonFinitePayload()
+        => "{\"data\":[{\"embedding\":[NaN,Infinity,-Infinity,1],\"index\":0}]}";
 
-    /// <summary>Creates and starts the TestServer; returns an HttpClient wired to it.</summary>
+    /// <summary>Creates (once) the in-process TestServer and returns an HttpClient wired to it.</summary>
     public HttpClient CreateClient()
     {
+        if (_client is not null)
+        {
+            return _client;
+        }
+
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         var app = builder.Build();
 
-        app.Map("/embeddings", async ctx =>
+        app.Map("/v1/embeddings", async ctx =>
         {
-            ctx.Request.EnableBuffering();
-            using var reader = new StreamReader(ctx.Request.Body, Encoding.UTF8, leaveOpen: true);
-            var body = await reader.ReadToEndAsync();
+            string body;
+            using (var reader = new StreamReader(ctx.Request.Body, Encoding.UTF8, leaveOpen: true))
+            {
+                body = await reader.ReadToEndAsync();
+            }
 
             _requests.Add(new RecordedRequest(
                 ctx.Request.Method,
@@ -110,13 +114,23 @@ public sealed class EmbeddingStubServer : IDisposable
                 ctx.Request.Headers.Authorization.ToString(),
                 body));
 
-            var mode = NextMode();
-            switch (mode)
+            var inputCount = 1;
+            try
+            {
+                using var doc = JsonDocument.Parse(body);
+                inputCount = doc.RootElement.GetProperty("input").GetArrayLength();
+            }
+            catch (JsonException)
+            {
+                // Non-JSON body: respond as if a single input.
+            }
+
+            switch (NextMode())
             {
                 case ResponseMode.Success:
                     ctx.Response.StatusCode = StatusCodes.Status200OK;
                     ctx.Response.ContentType = "application/json";
-                    await ctx.Response.WriteAsync(SuccessPayload());
+                    await ctx.Response.WriteAsync(SuccessPayload(inputCount, Dimensions));
                     break;
                 case ResponseMode.NonFiniteVector:
                     ctx.Response.StatusCode = StatusCodes.Status200OK;
@@ -133,10 +147,10 @@ public sealed class EmbeddingStubServer : IDisposable
                     break;
                 case ResponseMode.NonTransient4xx:
                     ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
-                    await ctx.Response.WriteAsync("{\"error\":\"bad request\"}");
+                    await ctx.Response.WriteAsync("{\"error\":{\"message\":\"bad request\"}}");
                     break;
                 case ResponseMode.ConnectionDrop:
-                    // Aborts the response mid-flight: client sees a connection failure.
+                    // Abort mid-flight: the provider observes a connection failure (AC-4.5).
                     ctx.Abort();
                     break;
                 default:
@@ -144,11 +158,15 @@ public sealed class EmbeddingStubServer : IDisposable
             }
         });
 
+        _app = app;
         _ = app.RunAsync();
-        return app.GetTestClient();
+        _client = app.GetTestClient();
+        return _client;
     }
 
     public void Dispose()
     {
+        _client?.Dispose();
+        _app?.DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
 }
