@@ -95,7 +95,13 @@ Each entry:
 - Lesson: no lesson — the advisory run immediately caught a real violation (my own reconciliation commit lacked per-task evidence), validating the check before enforcement.
 - Change to constitution/specs: specs/process.md merge gate now names the check; flip to ENFORCE=1 after 2-3 clean real PRs.
 
-## Phase milestones
+### 2026-11-18 — Phase 1 — spec 002: AC mandated a registry-by-name where only config validation was a real behavior
+
+- What I expected: the draft's B1 would contain only user-observable behaviors for the embedding abstraction.
+- What happened: AC-1.2 required that "requesting a provider name not in the registry of known providers produces a startup validation error naming the accepted values." Nothing in the system requests a provider by name at runtime — the only input is the `embedding_provider` config value, read once at startup. A lookup-by-name registry is just one implementation of resolving that config value (a switch statement satisfies the same observable behavior), so the AC mandated HOW. It was also redundant: the observable behavior (startup fails on an unknown provider name) is config validation, owned by B5/AC-5.2.
+- Signal: human review of the draft spec — I asked "why request by provider name here?" No automated signal existed. The spec skill's quality gate checks that each AC is mechanically verifiable, not that it is minimal or traces to a real requirement, so a redundant-but-verifiable AC passes every gate. The tell in hindsight: AC-1.2 referenced "known providers"/"accepted values" — a set that only exists because of B5's config schema. A behavior block referencing another block's data is a smell that it's derived, not primary.
+- Lesson: an AC written in terms of a data structure ("the registry") instead of an input ("the config value") is HOW, not WHAT — check each AC names the real input that triggers it, and that no two ACs verify the same observable behavior from different blocks.
+- Change to constitution/specs: specs/002-embedding-provider/spec.md — AC-1.2/T-1.2 deleted; the unknown-provider-name permutation folded into AC-5.2 (config block) with T-5.2; Edge Cases pointer updated; success criterion count 16→16→15... corrected to 15. No constitution change yet — candidate rule for the spec skill's quality gate if this recurs.
 
 | Phase                                      | Status | Exit condition                                                 |
 | ------------------------------------------ | ------ | -------------------------------------------------------------- |
